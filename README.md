@@ -31,12 +31,12 @@ type g = (email: Email) => Username
 ## Contents
 
 - [Basic Usage](#basic-usage)
-- [Making Categories](#making-categories)
-- [Conditionals](#conditionals)
+- [Making Types](#making-types)
+- [Type Arithmetic](#type-arithmetic)
 - [Testing](#testing)
 - [Naming Convention](#naming-convention)
 - [Aliases](#aliases)
-- [Parser](#parser-with-custom-syntax)
+- [Conditionals](#conditionals)
 
 ## Basic Usage
 
@@ -87,7 +87,7 @@ DrivingLicenceNumber
 HealthInsuranceNumber
 ```
 
-## Making Categories
+## Making Types
 
 ### Import
 
@@ -145,6 +145,8 @@ Received ${a}`)
 }
 ```
 
+## Type Arithmetic
+
 ### Union
 
 ```typescript
@@ -201,6 +203,28 @@ const [Int, Decimal] = divide(Number, a => a === Math.round(a))
 import { divide, range } from "typescript-extra"
 
 const [Prime, NonPrime] = divide(Int, a => range(2¸ Math.sqrt(a)).all(b => a % b))
+```
+
+## Testing
+
+---
+
+[example](https://github.com/mytee306/typescript-extra/blob/master/src/utils/check.test.ts)
+
+---
+
+## Naming Convention
+
+Int.Pos with an alias PosInt
+
+## Aliases
+
+```typescript
+import Int from "./Int"
+
+const PosInt = Int.Pos
+
+export default PosInt
 ```
 
 ## Conditionals
@@ -263,22 +287,4 @@ if Pos(a) {
 }
 
 return -a
-```
-
-## Testing
-
-[Fuzz testing](https://repl.it/@mytee306/typescript-schema-validators-comparison)
-
-## Naming Convention
-
-Int.Pos with an alias PosInt
-
-## Aliases
-
-```typescript
-import Int from "./Int"
-
-const PosInt = Int.Pos
-
-export default PosInt
 ```
