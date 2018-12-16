@@ -1,71 +1,75 @@
+import * as Chance from "chance";
+
+const chance = new Chance();
+
 class Int extends Number {
   static test = (a: number) => a === Math.round(a);
-  static example = 1;
+  static generate = () => chance.integer();
   static toInt = (a: number) => Math.round(a);
 
-  constructor(value: number) {
-    if (Int.test(value)) {
-      super(value);
+  constructor(a: number) {
+    if (Int.test(a)) {
+      super(a);
     } else {
-      throw new TypeError(`Expected ${Int.name} e.g. ${Int.example}
-Received ${value}`);
+      throw new TypeError(`Expected ${Int.name} e.g. '${Int.generate()}'
+Received '${a}'`);
     }
   }
 
   // a way for the compiler to differentiate between Int and Dec
   // there is an issue when implementing a class with private or protected properties
-  _int() {}
+  _Int() {}
 }
 
 class Dec extends Number {
   static test = (a: number) => !Int.test(a);
-  static example = 1.1;
+  static generate = () => chance.floating();
   static toDecimal = (a: string) => parseFloat(a);
 
-  constructor(value: number) {
-    if (Dec.test(value)) {
-      super(value);
+  constructor(a: number) {
+    if (Dec.test(a)) {
+      super(a);
     } else {
-      throw new TypeError(`Expected ${Dec.name} e.g. ${Dec.example}
-Received ${value}`);
+      throw new TypeError(`Expected ${Dec.name} e.g. '${Dec.generate()}'
+Received '${a}'`);
     }
   }
 
-  _decimal() {}
+  _Decimal() {}
 }
 
 class Pos extends Number {
   static test = (a: number) => Math.sign(a) > 0;
-  static example = 1;
+  static generate = () => chance.natural();
   static toPos = (a: number) => Math.abs(a);
 
-  constructor(value: number) {
-    if (Pos.test(value)) {
-      super(value);
+  constructor(a: number) {
+    if (Pos.test(a)) {
+      super(a);
     } else {
-      throw new TypeError(`Expected ${Pos.name} e.g. ${Pos.example}
-Received ${value}`);
+      throw new TypeError(`Expected ${Pos.name} e.g. '${Pos.generate()}'
+Received '${a}'`);
     }
   }
 
-  _pos() {}
+  _Pos() {}
 }
 
 class Neg extends Number {
   static test = (a: number) => !Pos.test(a);
-  static example = -1;
+  static generate = () => -chance.natural();
   static toNeg = (a: number) => -Math.abs(a);
 
-  constructor(value: number) {
-    if (Neg.test(value)) {
-      super(value);
+  constructor(a: number) {
+    if (Neg.test(a)) {
+      super(a);
     } else {
-      throw new TypeError(`Expected ${Neg.name} e.g. ${Neg.example}
-Received ${value}`);
+      throw new TypeError(`Expected ${Neg.name} e.g. '${Neg.generate()}'
+Received '${a}'`);
     }
   }
 
-  _neg() {}
+  _Neg() {}
 }
 
 // ==============================
@@ -88,21 +92,21 @@ type Num = Int | Dec;
 
 class PosInt extends Int implements Pos {
   static test = (a: number) => Int.test(a) && Pos.test(a);
-  static example = 1;
+  static generate = () => chance.natural();
   static toPosInt = (a: number) => Pos.toPos(Int.toInt(a));
 
-  constructor(value: number) {
-    if (PosInt.test(value)) {
-      super(value);
+  constructor(a: number) {
+    if (PosInt.test(a)) {
+      super(a);
     } else {
-      throw new TypeError(`Expected ${PosInt.name} e.g. ${PosInt.example}
-Received ${value}`);
+      throw new TypeError(`Expected ${PosInt.name} e.g. '${PosInt.generate()}'
+Received '${a}'`);
     }
   }
 
-  _pos() {}
+  _Pos() {}
 
-  _posInt() {}
+  _PosInt() {}
 }
 
 // ==============================
@@ -113,21 +117,21 @@ Received ${value}`);
 
 class NegInt extends Int implements Neg {
   static test = (a: number) => Int.test(a) && !Pos.test(a);
-  static example = -1;
+  static generate = () => -chance.natural();
   static toNegInt = (a: number) => Neg.toNeg(Int.toInt(a));
 
-  constructor(value: number) {
-    if (NegInt.test(value)) {
-      super(value);
+  constructor(a: number) {
+    if (NegInt.test(a)) {
+      super(a);
     } else {
-      throw new TypeError(`Expected ${NegInt.name} e.g. ${NegInt.example}
-Received ${value}`);
+      throw new TypeError(`Expected ${NegInt.name} e.g. '${NegInt.generate()}'
+Received '${a}'`);
     }
   }
 
-  _neg() {}
+  _Neg() {}
 
-  _negInt() {}
+  _NegInt() {}
 }
 
 // ==============================
@@ -139,26 +143,26 @@ Received ${value}`);
 class NegDecOrPosInt extends Number implements Dec, Pos, Neg {
   static test = (a: number) =>
     (Dec.test(a) || Pos.test(a)) && !(Dec.test(a) && Pos.test(a));
-  static example = [1, -1.1];
+  static generate = () => [chance.natural(), -Math.abs(chance.floating())];
 
-  constructor(value: number) {
-    if (NegDecOrPosInt.test(value)) {
-      super(value);
+  constructor(a: number) {
+    if (NegDecOrPosInt.test(a)) {
+      super(a);
     } else {
-      throw new TypeError(`Expected ${NegDecOrPosInt.name} e.g. ${
-        NegDecOrPosInt.example
-      }
-Received ${value}`);
+      throw new TypeError(`Expected ${
+        NegDecOrPosInt.name
+      } e.g. '${NegDecOrPosInt.generate()}
+Received '${a}'`);
     }
   }
 
-  _decimal() {}
+  _Decimal() {}
 
-  _pos() {}
+  _Pos() {}
 
-  _neg() {}
+  _Neg() {}
 
-  _negDecOrPosInt() {}
+  _NegDecOrPosInt() {}
 }
 
 // ==============================
@@ -168,11 +172,7 @@ Received ${value}`);
 // ==============================
 
 class Address extends Array {
-  static streetTest = (street: string) => typeof street === "string";
-  static numberTest = Int.test;
-
-  static streetExample = "Saint John's";
-  static numberExample = 28;
+  generate = () => [chance.street(), chance.natural({ min: 1, max: 100 })];
 
   constructor(street: string, number: Int) {
     // @ts-ignore
@@ -185,6 +185,8 @@ type IAddress = Array<string | Int>;
 // ==============================
 
 // Division
+
+// ==============================
 
 // ==============================
 

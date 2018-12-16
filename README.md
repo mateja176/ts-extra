@@ -1,10 +1,32 @@
-# Category
+# Typescript Extra
 
 ## TODO
 
-1. How to make type classes like Pos extensible from the outside?
+- [x] Add random generators
+- [ ] Add helpers for
+  - [ ] testing
+  - [x] utilities like `range`
+  - [ ] type arithmetic
+- [ ] Add string derivatives
+- [ ] Add async validation
+  - validator function returns a Promise which is awaited
+  - Example unique username
 
-2. Single most efficient definitions for a type and aliases
+## Benefits
+
+- benefits of schema validation combined with static analysis
+  - analyze code an build time using typescript and vscode
+- unlimited free fuzz testing
+  - the value which the fuzz tests provide is proportional to the specificity of your types
+- comparing functions
+
+```typescript
+// any f where f is
+type f = (email: Email) => Username
+// is approximately equal to g where g is
+type g = (email: Email) => Username
+// f ~ g
+```
 
 ## Contents
 
@@ -18,55 +40,39 @@
 
 ## Basic Usage
 
-```javascript
-import { Num, PosNum } from "category"
+```typescript
+import { Num, Pos } from "category"
 
-// getAbsoluteValue :: Number -> Number
-const getAbsoluteValue = a => {
-  Num(a).throws()
-
-  return PosNum(a) ? a : -a
+const getAbsoluteValue = (a: Number) => {
+  return Pos(a) ? a : -a
 }
 ```
 
 ## Built-ins
 
-### Basic
+### Number
 
-```javascript
-Str
-Num
-Bool
-Obj
-Arr
-Func
+```typescript
+Int
+Int.Pos
+Int.Neg
+
+Dec
+Dec.Pos
+Dec.Neg
+
+Pos
+PosInt
+PosDecimal
+
+Neg
+NegInt
+NegDecimal
 ```
 
-### Derivatives
+### String
 
-#### Number
-
-```javascript
-Num.Pos
-Num.Pos.Int
-Num.Pos.Decimal
-
-Num.Neg
-Num.Neg.Int
-Num.Neg.Decimal
-
-Num.Int
-Num.Int.Pos
-Num.Int.Neg
-
-Num.Decimal
-Num.Decimal.Pos
-Num.Decimal.Neg
-```
-
-#### String
-
-```javascript
+```typescript
 Email
 Password
 Name
@@ -85,95 +91,126 @@ HealthInsuranceNumber
 
 ### Import
 
-```javascript
-import Category from "category"
+#### Named import
+
+```typescript
+import te from "typescript-extra"
+```
+
+#### Or import just what you need
+
+```typescript
+import { Int } from "typescript-extra"
 ```
 
 ### Empty category
 
-```javascript
-const Void = Category.empty()
+```typescript
+void
 ```
 
 ### Single Element
 
-```javascript
-const One = Category.from.element(1)
+```typescript
+type One = 1
 ```
 
 ### Collection
 
-```javascript
-const OneToFive = Category.from.collection([1, 2, 3, 4, 5])
+```typescript
+const OneToFive = 1 | 2 | 3 | 4 | 5
 ```
 
 ### Range
 
-```javascript
-const oneToFive = Category.from.range(1, 5)
-```
+```typescript
+import { range } from "typescript-extra"
+import * as Chance from "chance"
 
-### Rule
+const chance = new Chance()
 
-```javascript
-const Empty = a => {
-  if (Str.or(Arr)(a)) {
-    return a.length
-  } else {
-    throw new TypeError(`Expected something whose length can be read e.g. [1, 2, 3]
+class OneToHundred extends te.Int {
+  static test = (a: Int) => range(1, 100).includes(a)
+  static generate = () => chance.integer({ min: 1, max: 100 })
+
+  constructor(a: Int) {
+    if (OneToHundred.test(a)) {
+    } else {
+      throw new TypeError(`Expected ${
+        OneToHundred.name
+      } e.g. ${OneToHundred.generate()}
 Received ${a}`)
+    }
   }
 }
 ```
 
 ### Union
 
-```javascript
-const Num = Int.or(Decimal)
+```typescript
+const Num = Int | Decimal
 ```
 
 ### Difference
 
-```javascript
-const NegInt = Int.and(not(Pos))
+```typescript
+import { Int, Pos } from "typescript-extra"
+
+const NegInt = (a: number) => Int.test(a) && !Pos.test(a)
 ```
 
 ### Intersection
 
-```javascript
-const PosInt = Int.and(Pos)
+```typescript
+import { Int, Pos } from "typescript-extra"
+
+const PosInt = (a: number) => Int.test(a) && Pos.test(a)
 ```
 
 ### Exclusion
 
-```javascript
-const NegDecAndPosInt = Decimal.exclude(PosNum)
-const NegDecAndPosInt = Decimal.or(PosNum).and(not(Decimal.and(PosNum)))
+```typescript
+import { Decimal, Int, Pos } from "typescript-extra"
+
+const NegDecAndPosInt = (a: number) =>
+  (Decimal.test(a) || Pos.test(a)) && !(Decimal.test(a) && Pos.test(a))
 ```
 
 ### Combination
 
-```javascript
+```typescript
 // making StreetName and StreetNumber is suggested
-const Address = Str.with(Int)
+import { Int } from "typescript-extra"
+
+type IAddress = Array<string, Int>
 ```
 
 ### Division
 
-```javascript
-const [Int, Decimal] = Number.divide(a => a === Math.round(a))
+#### Not possible due to typescript limitations
+
+#### Overview
+
+```typescript
+import { divide } from "typescript-extra"
+
+const [Int, Decimal] = divide(Number, a => a === Math.round(a))
 ```
 
-```javascript
-const [Prime, NonPrime] = Int.divide(a => Category.from.range(2¸ Math.sqrt(a)).toArray().all(b => a % b))
+```typescript
+import { divide, range } from "typescript-extra"
+
+const [Prime, NonPrime] = divide(Int, a => range(2¸ Math.sqrt(a)).all(b => a % b))
 ```
 
 ## Conditionals
 
 ### If Else
 
-```javascript
-if (PosNum(a)) {
+```typescript
+import { Pos } from "typescript-extra"
+
+if (Pos(a)) {
   return a
 } else {
   return -a
@@ -182,8 +219,10 @@ if (PosNum(a)) {
 
 ### Switch
 
-```javascript
-switch (PosNum(a)) {
+```typescript
+import { Pos } from "typescript-extra"
+
+switch (Pos(a)) {
   case true:
     return a
 
@@ -194,9 +233,11 @@ switch (PosNum(a)) {
 
 ### Switch True
 
-```javascript
+```typescript
+import { Pos } from "typescript-extra"
+
 switch (true) {
-  case PosNum(a):
+  case Pos(a):
     return a
 
   default:
@@ -206,14 +247,18 @@ switch (true) {
 
 ### Ternary
 
-```javascript
-return PosNum(a) ? a : -a
+```typescript
+import { Pos } from "typescript-extra"
+
+return Pos(a) ? a : -a
 ```
 
 ### If
 
-```javascript
-if PosNum(a) {
+```typescript
+import { Pos } from "typescript-extra"
+
+if Pos(a) {
   return a
 }
 
@@ -222,32 +267,18 @@ return -a
 
 ## Testing
 
-[Fuzz testing](https://repl.it/@mytee306/javascript-schema-validators-comparison)
+[Fuzz testing](https://repl.it/@mytee306/typescript-schema-validators-comparison)
 
 ## Naming Convention
 
-### Scoping
-
-```javascript
-Int.Pos
-```
-
-### Standalone
-
-```javascript
-const Age = Category.Num.Int.Pos
-```
+Int.Pos with an alias PosInt
 
 ## Aliases
 
-```javascript
-import Category from "../category"
+```typescript
+import Int from "./Int"
 
-export { ...Category, PosNum: Category.Num.Pos }
-```
+const PosInt = Int.Pos
 
-## Parser with custom syntax
-
-```javascript
-const IntOrDecimal = parse("Int | Decimal")
+export default PosInt
 ```
