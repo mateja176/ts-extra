@@ -1,4 +1,4 @@
-# Typescript Extra
+# TS Extra
 
 ## TODO
 
